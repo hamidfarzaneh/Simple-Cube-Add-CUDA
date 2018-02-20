@@ -1,8 +1,11 @@
 #include <stdio.h>
+#include <time.h>
+#include <stdlib.h>
+
 enum {
     grid_count=16
-}
-__global__ void vectorAdditionKernel(float * A , float * B , float * C , dataCount){
+};
+__global__ void vectorAdditionKernel(float * A , float * B , float * C ,int dataCount){
     int index = blockIdx.x *blockDim.x + threadIdx.x;
     if(index < dataCount) 
         C[index] = A[index] + B[index];
@@ -14,7 +17,13 @@ int main(){
     float h_B[dataCount];
     float h_C[dataCount];
 
-    // initialize the values 
+// initialize the values 
+
+    for(int i = 0 ; i < dataCount ; i++){
+
+        h_A[i] = (float) i ;
+        h_B[i] = (float) i ;
+    }
 
     float * d_A;
     cudaMalloc(&d_A , dataCount * sizeof(float));
@@ -26,7 +35,7 @@ int main(){
 
     float * d_C;
     cudaMalloc(&d_C , dataCount * sizeof(float));
-    cudaMalloc(d_C , h_C , dataCount * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_C , h_C , dataCount * sizeof(float) , cudaMemcpyHostToDevice);
 
     // call the kernel
     int threadPerBlock = dataCount/grid_count;
@@ -35,7 +44,7 @@ int main(){
     // get the data
     cudaMemcpy(h_C , d_C , dataCount * sizeof(float) , cudaMemcpyDeviceToHost);
 
-    for(int i = 0 ; i < dataCount ,i++){
+    for(int i = 0 ; i < dataCount ;i++){
         printf("%f \n" , h_C[i]);
 
     }
